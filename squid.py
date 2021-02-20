@@ -15,12 +15,18 @@ if not os.path.exists(SQUID_CONFIG_BAK):
 
 
 def update_conf(proxies: [Proxy]):
-    with open(SQUID_CONFIG_BAK, "r") as F:
-        squid_conf = F.readlines()
-    squid_conf = list(filter(lambda x: x != "http_access deny all\n", squid_conf))
-    squid_conf.append("\n# Cache peer config\n")
+    # with open(SQUID_CONFIG_BAK, "r") as F:
+    #     squid_conf = F.readlines()
+    # squid_conf = list(filter(lambda x: x != "http_access deny all\n", squid_conf))
+    squid_conf = list()
+    squid_conf.append("\n# Souei config\n") # http_port  3128  transparent
     squid_conf.append("acl all src 0.0.0.0/0.0.0.0\n")
+    squid_conf.append("acl SSL_ports port 443\n")
+    squid_conf.append("acl Safe_ports port 80\n")
+    squid_conf.append("acl Safe_ports port 443\n")
+    squid_conf.append("acl CONNECT method CONNECT\n")
     squid_conf.append("http_access allow all\n")
+    squid_conf.append("http_port 3128 transparent\n")
     squid_conf.append("no_cache deny all\n")
     for proxy in proxies:
         ip, port = proxy.ip_port.split(":")
