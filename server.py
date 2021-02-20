@@ -59,5 +59,5 @@ async def run_api_server():
     logger.info("run api_server")
     runner = web.AppRunner(api_server)
     await runner.setup()
-    site = web.TCPSite(runner, 'localhost', 8000)
+    site = web.TCPSite(runner, '0.0.0.0', 8000)
     await site.start()

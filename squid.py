@@ -19,6 +19,7 @@ def update_conf(proxies: [Proxy]):
         squid_conf = F.readlines()
     squid_conf = list(filter(lambda x: x != "http_access deny all\n", squid_conf))
     squid_conf.append("\n# Cache peer config\n")
+    squid_conf.append("acl all src 0.0.0.0/0.0.0.0\n")
     squid_conf.append("http_access allow all\n")
     squid_conf.append("no_cache deny all\n")
     for proxy in proxies:
