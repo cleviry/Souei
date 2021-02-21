@@ -55,15 +55,13 @@ async def update_squid_task():
     squid.update_conf(proxies)
 
 
-# TODO docker
-
 if __name__ == '__main__':
     logger.info("start")
 
     loop = asyncio.get_event_loop()
 
     msh = Scheduler()
-    msh.add_job(CronJob().every(5).minute.go(fetch_new_proxy_task))
+    msh.add_job(CronJob().every(10).minute.go(fetch_new_proxy_task))
     msh.add_job(CronJob().every(5).minute.go(verify_ok_proxy_task))
     msh.add_job(CronJob().every(30).minute.go(verify_error_proxy_task))
     try:
@@ -77,7 +75,7 @@ if __name__ == '__main__':
 
     # loop.run_until_complete(update_squid_task())
 
-    # res = loop.run_until_complete(spider.spys_one())
+    # res = loop.run_until_complete(spider.http_proxy())
     # print(list(map(lambda x: x.ip_port, res)))
 
     # loop.run_until_complete(verifier.verify_error_proxy())

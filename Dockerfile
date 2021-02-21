@@ -1,11 +1,10 @@
-FROM python:3.9-alpine
+FROM python:3.9
 
 WORKDIR /app
 ADD . /app
 
-RUN apk update --no-cache && \
-    apk add g++ gcc musl-dev libxslt-dev --no-cache && \
-    apk add squid --no-cache && \
+RUN sudo apt update && \
+    sudo apt install squid && \
     squid -z && \
     pip install -r requirements.txt && \
     pyppeteer-install
