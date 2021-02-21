@@ -19,6 +19,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
+VERIFY_ERROR_LIMIT = 100
+
 
 @cron_wait
 async def fetch_new_proxy_task():
@@ -41,7 +43,7 @@ async def verify_error_proxy_task():
     s = sess_maker()
     c = s.query(Proxy).filter(Proxy.status == STATUS_OK).count()
     s.close()
-    if c < 100:
+    if c < VERIFY_ERROR_LIMIT:
         await verify_error_proxy()
         await update_squid_task()
 

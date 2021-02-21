@@ -3,8 +3,8 @@ FROM python:3.9
 WORKDIR /app
 ADD . /app
 
-RUN sudo apt update && \
-    sudo apt install squid && \
+RUN apt update && \
+    apt install squid && \
     squid -z && \
     pip install -r requirements.txt && \
     pyppeteer-install
