@@ -6,7 +6,9 @@ ADD . /app
 RUN apk update --no-cache && \
     apk add g++ gcc musl-dev libxslt-dev --no-cache && \
     apk add squid --no-cache && \
-    pip install -r requirements.txt
+    squid -z && \
+    pip install -r requirements.txt && \
+    pyppeteer-install
 
 ENV SQUID_CONFIG="/etc/squid/squid.conf"
 

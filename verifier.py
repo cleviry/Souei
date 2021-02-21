@@ -89,7 +89,7 @@ async def proxy_verify(p: Proxy):
 
 async def verify_and_update(p: Proxy):
     result = await proxy_verify(p)
-    logger.info(f"verify proxy {p.ip_port} status {result}")
+    logger.debug(f"verify proxy {p.ip_port} status {result}")
     update_proxy_status(p, result)
 
 
