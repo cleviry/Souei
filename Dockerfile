@@ -4,7 +4,7 @@ WORKDIR /app
 ADD . /app
 
 RUN apt update && \
-    apt install squid && \
+    apt install -y squid && \
     squid -z && \
     pip install -r requirements.txt && \
     pyppeteer-install
