@@ -15,6 +15,7 @@ if not os.path.exists(SQUID_CONFIG_BAK):
 
 
 def update_conf(proxies: [Proxy]):
+    ips = list()
     # with open(SQUID_CONFIG_BAK, "r") as F:
     #     squid_conf = F.readlines()
     # squid_conf = list(filter(lambda x: x != "http_access deny all\n", squid_conf))
@@ -34,7 +35,10 @@ def update_conf(proxies: [Proxy]):
 
         for proxy in proxies:
             ip, port = proxy.ip_port.split(":")
+            if ip in ips:
+                continue
             squid_conf.append(PEER_CONF % (ip, port))
+            ips.append(ip)
 
     with open(SQUID_CONFIG, "w") as F:
         F.writelines(squid_conf)
