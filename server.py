@@ -1,4 +1,5 @@
 from aiohttp import web
+from prometheus_client import Gauge, start_http_server
 
 from db import sess_maker
 from model import Proxy, STATUS_ERROR, STATUS_OK, STATUS_NEW, get_one_proxy, get_all_proxy
@@ -56,8 +57,46 @@ api_server.add_routes(routes)
 
 
 async def run_api_server():
+    start_http_server(8001)
     logger.info("run api_server")
     runner = web.AppRunner(api_server)
     await runner.setup()
     site = web.TCPSite(runner, '0.0.0.0', 8000)
     await site.start()
+
+
+available_proxy_gauge = Gauge('available_proxy', '')
+
+
+def available_proxy_gauge_fn():
+    s = sess_maker()
+    res = s.query(Proxy).filter(Proxy.status == STATUS_OK).count()
+    s.close()
+    return res
+
+
+available_proxy_gauge.set_function(available_proxy_gauge_fn)
+
+error_proxy_gauge = Gauge('error_proxy', '')
+
+
+def error_proxy_gauge_fn():
+    s = sess_maker()
+    res = s.query(Proxy).filter(Proxy.status == STATUS_ERROR).count()
+    s.close()
+    return res
+
+
+error_proxy_gauge.set_function(error_proxy_gauge_fn)
+
+new_proxy_gauge = Gauge('new_proxy', '')
+
+
+def new_proxy_gauge_fn():
+    s = sess_maker()
+    res = s.query(Proxy).filter(Proxy.status == STATUS_NEW).count()
+    s.close()
+    return res
+
+
+new_proxy_gauge.set_function(new_proxy_gauge_fn)
