@@ -3,12 +3,13 @@ import logging
 
 from async_cron.job import CronJob
 from async_cron.schedule import Scheduler
+from sqlalchemy import asc
 
 import spider
 import squid
 import verifier
 from db import sess_maker
-from model import Proxy, STATUS_OK
+from model import Proxy, STATUS_OK, STATUS_ERROR
 from server import run_api_server
 from tool import logger, cron_wait
 from verifier import verify_error_proxy
@@ -19,7 +20,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-VERIFY_ERROR_LIMIT = 10
+VERIFY_ERROR_LIMIT = 100
+MAX_ERROR_PROXIES = 2000
 
 
 @cron_wait
@@ -43,6 +45,14 @@ async def verify_error_proxy_task():
     s.close()
     if c < VERIFY_ERROR_LIMIT:
         await verify_error_proxy()
+
+    s = sess_maker()
+    c = s.query(Proxy).filter(Proxy.status == STATUS_ERROR).count()
+    if c > MAX_ERROR_PROXIES:
+        res = s.query(Proxy).filter(Proxy.status == STATUS_ERROR).order_by(asc(Proxy.updated_at)).limit(
+            c - MAX_ERROR_PROXIES).from_self().all()
+        [s.delete(i) for i in res]
+    s.commit()
 
 
 @cron_wait
@@ -69,9 +79,6 @@ if __name__ == '__main__':
 
     msh = Scheduler()
     msh.add_job(CronJob().every(30).minute.go(main_task))
-    # msh.add_job(CronJob().every(10).minute.go(fetch_new_proxy_task))
-    # msh.add_job(CronJob().every(5).minute.go(verify_ok_proxy_task))
-    # msh.add_job(CronJob().every(30).minute.go(verify_error_proxy_task))
     try:
         loop.run_until_complete(asyncio.wait([
             msh.start(),
@@ -80,15 +87,3 @@ if __name__ == '__main__':
         loop.run_forever()
     except KeyboardInterrupt:
         print('exit')
-
-    # loop.run_until_complete(update_squid_task())
-
-    # res = loop.run_until_complete(spider.http_proxy())
-    # print(list(map(lambda x: x.ip_port, res)))
-
-    # loop.run_until_complete(verifier.verify_error_proxy())
-    # loop.run_until_complete(verifier.verify_ok_proxy())
-    # loop.run_until_complete(spider.run_spider())
-    # loop.run_until_complete(verifier.verify_new_proxy())
-
-    # loop.run_until_complete(update_squid_task())

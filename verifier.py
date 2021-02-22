@@ -8,7 +8,7 @@ from model import Proxy, STATUS_NEW, STATUS_OK, update_proxy_status, STATUS_ERRO
 from tool import logger
 
 VERIFY_LIMIT = eval(os.getenv("VERIFY_LIMIT", "0.5"))
-DOUBLE_VERIFY_ENABLE = eval(os.getenv("DOUBLE_VERIFY_ENABLE", "False"))
+DOUBLE_VERIFY_ENABLE = eval(os.getenv("DOUBLE_VERIFY_ENABLE", "True"))
 DOUBLE_VERIFY_DELAY = int(os.getenv("DOUBLE_VERIFY_DELAY", 5))
 PROXY_TIMEOUT = int(os.getenv("PROXY_TIMEOUT", 5))
 VERIFY_URLS = [
@@ -23,7 +23,7 @@ IP_CHECKER_API_SSL = 'https://api.ipify.org/?format=json'
 
 __CURRENT_IP__ = None
 
-semaphore = asyncio.Semaphore(128)
+semaphore = asyncio.Semaphore(1024)
 
 
 async def get_current_ip():
@@ -98,7 +98,8 @@ async def proxy_verify(p: Proxy):
 async def verify_and_update(p: Proxy):
     result = await proxy_verify(p)
     logger.debug(f"verify proxy {p.ip_port} status {result}")
-    update_proxy_status(p, result)
+    if p.status != result:
+        update_proxy_status(p, result)
 
 
 async def verify_new_proxy():
