@@ -23,7 +23,7 @@ IP_CHECKER_API_SSL = 'https://api.ipify.org/?format=json'
 
 __CURRENT_IP__ = None
 
-semaphore = asyncio.Semaphore(512)
+semaphore = asyncio.Semaphore(128)
 
 
 async def get_current_ip():
@@ -39,7 +39,7 @@ async def get_current_ip():
 
 
 async def verify_ip(p: Proxy):
-    with semaphore:
+    async with semaphore:
         proxy_url = f"{p.scheme}://{p.ip_port}"
         try:
             async with aiohttp.request(
@@ -56,7 +56,7 @@ async def verify_ip(p: Proxy):
 
 
 async def verify_url(p: Proxy, url):
-    with semaphore:
+    async with semaphore:
         proxy_url = f"{p.scheme}://{p.ip_port}"
         try:
             async with aiohttp.request(
