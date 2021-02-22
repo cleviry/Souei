@@ -14,14 +14,16 @@ PROXY_TIMEOUT = int(os.getenv("PROXY_TIMEOUT", 5))
 VERIFY_URLS = [
     "https://www.baidu.com/",
     "https://www.douban.com/",
-    # "https://www.163.com/",
+    "https://www.163.com/",
     "https://www.sina.com.cn/",
-    # "https://www.qq.com/",
+    "https://www.qq.com/",
 ]
 
 IP_CHECKER_API_SSL = 'https://api.ipify.org/?format=json'
 
 __CURRENT_IP__ = None
+
+semaphore = asyncio.Semaphore(512)
 
 
 async def get_current_ip():
@@ -37,35 +39,37 @@ async def get_current_ip():
 
 
 async def verify_ip(p: Proxy):
-    proxy_url = f"{p.scheme}://{p.ip_port}"
-    try:
-        async with aiohttp.request(
-                "GET", IP_CHECKER_API_SSL,
-                proxy=proxy_url,
-                timeout=aiohttp.ClientTimeout(total=PROXY_TIMEOUT)
-        ) as resp:
-            res = await resp.json()
-            ip = res["ip"]
-            print(ip)
-            return STATUS_OK if ip != get_current_ip() else STATUS_ERROR
-    except Exception:
-        return STATUS_ERROR
+    with semaphore:
+        proxy_url = f"{p.scheme}://{p.ip_port}"
+        try:
+            async with aiohttp.request(
+                    "GET", IP_CHECKER_API_SSL,
+                    proxy=proxy_url,
+                    timeout=aiohttp.ClientTimeout(total=PROXY_TIMEOUT)
+            ) as resp:
+                res = await resp.json()
+                ip = res["ip"]
+                print(ip)
+                return STATUS_OK if ip != get_current_ip() else STATUS_ERROR
+        except Exception:
+            return STATUS_ERROR
 
 
 async def verify_url(p: Proxy, url):
-    proxy_url = f"{p.scheme}://{p.ip_port}"
-    try:
-        async with aiohttp.request(
-                "GET", url,
-                proxy=proxy_url,
-                timeout=aiohttp.ClientTimeout(total=PROXY_TIMEOUT)
-        ) as resp:
-            if resp.status == 200:
-                return STATUS_OK
-            else:
-                return STATUS_ERROR
-    except Exception:
-        return STATUS_ERROR
+    with semaphore:
+        proxy_url = f"{p.scheme}://{p.ip_port}"
+        try:
+            async with aiohttp.request(
+                    "GET", url,
+                    proxy=proxy_url,
+                    timeout=aiohttp.ClientTimeout(total=PROXY_TIMEOUT)
+            ) as resp:
+                if resp.status == 200:
+                    return STATUS_OK
+                else:
+                    return STATUS_ERROR
+        except Exception:
+            return STATUS_ERROR
 
 
 async def verify(p: Proxy):
