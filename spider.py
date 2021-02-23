@@ -42,9 +42,6 @@ async def run_spider():
     await asyncio.wait(tasks)
 
 
-ses = AsyncHTMLSession()
-
-
 def spider_log(fn):
     async def wrapper(*args, **kw):
         res = await fn(*args, **kw)
@@ -56,8 +53,10 @@ def spider_log(fn):
 
 @spider_log
 async def ipaddress():
-    resp = await ses.get('https://www.ipaddress.com/proxy-list/')
     res = list()
+
+    sess = AsyncHTMLSession()
+    resp = await sess.get('https://www.ipaddress.com/proxy-list/')
     for ip_row in resp.html.find('.proxylist tbody tr'):
         ip_port = ip_row.find('td:nth-child(1)', first=True).text
         p = Proxy(
@@ -66,13 +65,17 @@ async def ipaddress():
             status=STATUS_NEW,
         )
         res.append(p)
+    await sess.close()
+
     return res
 
 
 @spider_log
 async def kuaidaili():
     res = list()
-    resp = await ses.get(f'https://www.kuaidaili.com/free/inha/')
+
+    sess = AsyncHTMLSession()
+    resp = await sess.get(f'https://www.kuaidaili.com/free/inha/')
     for ip_row in resp.html.find('#list table tr'):
         ip = ip_row.find('td[data-title="IP"]', first=True)
         port = ip_row.find('td[data-title="PORT"]', first=True)
@@ -83,7 +86,7 @@ async def kuaidaili():
                 status=STATUS_NEW,
             ))
     await asyncio.sleep(5)
-    resp = await ses.get(f'https://www.kuaidaili.com/free/intr/')
+    resp = await sess.get(f'https://www.kuaidaili.com/free/intr/')
     for ip_row in resp.html.find('#list table tr'):
         ip = ip_row.find('td[data-title="IP"]', first=True)
         port = ip_row.find('td[data-title="PORT"]', first=True)
@@ -93,6 +96,8 @@ async def kuaidaili():
                 scheme=SCHEME_HTTP,
                 status=STATUS_NEW,
             ))
+    await sess.close()
+
     return res
 
 
@@ -114,8 +119,10 @@ async def cool_proxy():
 
 @spider_log
 async def free_proxy_list():
-    resp = await ses.get('https://free-proxy-list.net/')
     res = list()
+
+    sess = AsyncHTMLSession()
+    resp = await sess.get('https://free-proxy-list.net/')
     for ip_row in resp.html.find('#proxylisttable tbody tr'):
         ip = ip_row.find('td:nth-child(1)', first=True)
         port = ip_row.find('td:nth-child(2)', first=True)
@@ -125,18 +132,22 @@ async def free_proxy_list():
                 scheme=SCHEME_HTTP,
                 status=STATUS_NEW,
             ))
+    await sess.close()
+
     return res
 
 
 @spider_log
 async def http_proxy():
     res = list()
+
+    sess = AsyncHTMLSession()
     for u in [
         'https://proxyhttp.net/free-list/proxy-anonymous-hide-ip-address/',
         'https://proxyhttp.net/',
         'https://proxyhttp.net/free-list/anonymous-server-hide-ip-address/2#proxylist',
     ]:
-        resp = await ses.get(u)
+        resp = await sess.get(u)
         await resp.html.arender(wait=1.5, timeout=10.0)
         for ip_row in resp.html.find('table.proxytbl tr'):
             ip = ip_row.find('td:nth-child(1)', first=True)
@@ -151,14 +162,17 @@ async def http_proxy():
                     ))
             except AttributeError:
                 pass
+    await sess.close()
+
     return res
 
 
 @spider_log
 async def proxy_list():
     res = list()
-    resp = await ses.get('http://proxy-list.org/english/index.php')
 
+    sess = AsyncHTMLSession()
+    resp = await sess.get('http://proxy-list.org/english/index.php')
     for ul in resp.html.find('#proxy-table > div.table-wrap ul'):
         js_code = ul.find('li.proxy script', first=True).text
         matched = re.findall(r"Proxy\('(.+)'\)", js_code)
@@ -172,6 +186,7 @@ async def proxy_list():
                 scheme=SCHEME_HTTP,
                 status=STATUS_NEW,
             ))
+    await sess.close()
 
     return res
 
@@ -195,8 +210,9 @@ async def proxy_scraper():
 @spider_log
 async def proxynova():
     res = list()
-    resp = await ses.get('https://www.proxynova.com/proxy-server-list/')
 
+    sess = AsyncHTMLSession()
+    resp = await sess.get('https://www.proxynova.com/proxy-server-list/')
     for tr in resp.html.find('#tbl_proxy_list > tbody:nth-child(2) > tr'):
         if 'data-proxy-id' not in tr.attrs:
             continue
@@ -218,6 +234,7 @@ async def proxynova():
             scheme=SCHEME_HTTP,
             status=STATUS_NEW,
         ))
+    await sess.close()
 
     return res
 
@@ -282,7 +299,9 @@ async def thespeedx_proxy_list():
 @spider_log
 async def spys_one():
     res = list()
-    resp = await ses.get('http://spys.one/en/anonymous-proxy-list')
+
+    sess = AsyncHTMLSession()
+    resp = await sess.get('http://spys.one/en/anonymous-proxy-list')
     await resp.html.arender(wait=1.5, timeout=10.0)
     for ip_row in resp.html.find('table tr[onmouseover]'):
         ip_port_text_elem = ip_row.find('.spy14', first=True)
@@ -298,5 +317,6 @@ async def spys_one():
                     scheme=SCHEME_HTTP,
                     status=STATUS_NEW,
                 ))
+    await sess.close()
 
     return res
