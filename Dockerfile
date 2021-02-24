@@ -17,4 +17,4 @@ ENV SQUID_CONFIG="/etc/squid/squid.conf"
 EXPOSE 8000
 EXPOSE 3128
 
-CMD bash -c "supervisord -c ./supervisord.conf & && python main.py"
+CMD bash -c "supervisord -c ./supervisord.conf && python main.py"
