@@ -1,6 +1,8 @@
 # Souei
 Souei是一个Python异步代理池。
 
+[English README](README_en.md)
+
 Souei提供简单的API和基于squid的动态转发功能。理论上只需要设置为使用Souei提供的http代理地址，即可使用代理池。
 
 Souei是依赖Docker设计，希望将复杂功能集为一个简单的整体。
