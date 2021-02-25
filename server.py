@@ -65,7 +65,7 @@ async def run_api_server():
     await site.start()
 
 
-available_proxy_gauge = Gauge('available_proxy', '')
+available_proxy_gauge = Gauge('souei_available_proxy', '')
 
 
 def available_proxy_gauge_fn():
@@ -77,7 +77,7 @@ def available_proxy_gauge_fn():
 
 available_proxy_gauge.set_function(available_proxy_gauge_fn)
 
-error_proxy_gauge = Gauge('error_proxy', '')
+error_proxy_gauge = Gauge('souei_error_proxy', '')
 
 
 def error_proxy_gauge_fn():
@@ -89,7 +89,7 @@ def error_proxy_gauge_fn():
 
 error_proxy_gauge.set_function(error_proxy_gauge_fn)
 
-new_proxy_gauge = Gauge('new_proxy', '')
+new_proxy_gauge = Gauge('souei_new_proxy', '')
 
 
 def new_proxy_gauge_fn():

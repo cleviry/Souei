@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 from async_cron.job import CronJob
 from async_cron.schedule import Scheduler
@@ -20,8 +21,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-VERIFY_ERROR_LIMIT = 100
-MAX_ERROR_PROXIES = 2000
+VERIFY_ERROR_LIMIT = int(os.getenv("VERIFY_ERROR_LIMIT", 100))
+MAX_ERROR_PROXIES = int(os.getenv("MAX_ERROR_PROXIES", 2048))
 
 
 @cron_wait
