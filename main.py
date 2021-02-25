@@ -77,6 +77,7 @@ if __name__ == '__main__':
     logger.info("start")
 
     loop = asyncio.get_event_loop()
+    loop.run_until_complete(update_squid_task())
 
     msh = Scheduler()
     msh.add_job(CronJob().every(30).minute.go(main_task))
