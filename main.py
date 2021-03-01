@@ -26,19 +26,6 @@ MAX_ERROR_PROXIES = int(os.getenv("MAX_ERROR_PROXIES", 2048))
 
 
 @cron_wait
-async def fetch_new_proxy_task():
-    logger.info("run fetch_new_proxy_task")
-    await spider.run_spider()
-    await verifier.verify_new_proxy()
-
-
-@cron_wait
-async def verify_ok_proxy_task():
-    logger.info("run verify_ok_proxy_task")
-    await verifier.verify_ok_proxy()
-
-
-@cron_wait
 async def verify_error_proxy_task():
     logger.info("run verify_error_proxy_task")
     s = sess_maker()
@@ -66,9 +53,18 @@ async def update_squid_task():
 
 
 @cron_wait
-async def main_task():
-    await verify_ok_proxy_task()
-    await fetch_new_proxy_task()
+async def verify_ok_proxy_task():
+    logger.info("run verify_ok_proxy_task")
+    await verifier.verify_ok_proxy()
+    await verify_error_proxy_task()
+    await update_squid_task()
+
+
+@cron_wait
+async def fetch_new_proxy_task():
+    logger.info("run fetch_new_proxy_task")
+    await spider.run_spider()
+    await verifier.verify_new_proxy()
     await verify_error_proxy_task()
     await update_squid_task()
 
@@ -80,7 +76,8 @@ if __name__ == '__main__':
     loop.run_until_complete(update_squid_task())
 
     msh = Scheduler()
-    msh.add_job(CronJob().every(30).minute.go(main_task))
+    msh.add_job(CronJob().every(10).minute.go(verify_ok_proxy_task))
+    msh.add_job(CronJob().every(30).minute.go(fetch_new_proxy_task))
     try:
         loop.run_until_complete(asyncio.wait([
             msh.start(),
