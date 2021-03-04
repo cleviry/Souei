@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 
 from db import engine, sess_maker
+from tool import logger
 
 Base = declarative_base()
 
@@ -42,6 +43,8 @@ def get_all_proxy():
 
 
 def update_proxy_status(p: Proxy, status):
-    s = sess_maker()
-    s.query(Proxy).filter(Proxy.ip_port == p.ip_port).update({'status': status})
-    s.commit()
+    logger.debug(f"update {p.ip_port} {p.status} to {status}")
+    if p.status != status:
+        s = sess_maker()
+        s.query(Proxy).filter(Proxy.ip_port == p.ip_port).update({'status': status})
+        s.commit()

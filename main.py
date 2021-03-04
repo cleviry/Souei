@@ -65,7 +65,7 @@ async def fetch_new_proxy_task():
     logger.info("run fetch_new_proxy_task")
     await spider.run_spider()
     await verifier.verify_new_proxy()
-    await verify_error_proxy_task()
+    # await verify_error_proxy_task()
     await update_squid_task()
 
 

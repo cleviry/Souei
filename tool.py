@@ -24,8 +24,10 @@ def cron_wait(fn):
         nonlocal running
         if not running:
             running = True
-            res = await fn(*args, **kw)
-            running = False
+            try:
+                res = await fn(*args, **kw)
+            finally:
+                running = False
             return res
 
     return wrapper
