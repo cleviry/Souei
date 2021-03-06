@@ -23,7 +23,7 @@ IP_CHECKER_API_SSL = 'https://api.ipify.org/?format=json'
 
 __CURRENT_IP__ = None
 
-semaphore = asyncio.Semaphore(1024)
+semaphore = asyncio.Semaphore(128)
 
 
 async def get_current_ip():
