@@ -20,19 +20,8 @@ docker run -d -p 8000:8000 -p 3128:3218 --name souei zhshch/souei
 ```
 
 Using Docker Compose.
-```yaml
-version: '3'
-
-services:
-  souei:
-    image: zhshch/souei
-    restart: always
-    ports:
-      - 8000:8000 # API
-      - 3128:3128 # Dynamic http proxy
-      - 8001:8001 # Prometheus
-    volumes:
-      - ./souei:/app/data
+```shell
+docker-composeup up -d
 ```
 
 Check API:
